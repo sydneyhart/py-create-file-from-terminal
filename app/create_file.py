@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 from datetime import datetime
 
 
@@ -22,37 +22,35 @@ def create_file_from_terminal() -> None:
         else:
             i += 1
 
+    dir_path = os.path.join(*directories) if directories else "."
     if directories:
-        dir_path = os.path.join(*directories)
         os.makedirs(dir_path, exist_ok=True)
-    else:
-        dir_path = "."
 
     if filename is None:
         return
 
     file_path = os.path.join(dir_path, filename)
-
     separator = ""
+
     if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
         with open(file_path, "rb") as existing_file:
             existing_file.seek(-1, os.SEEK_END)
             ends_with_newline = existing_file.read(1) == b"\n"
         separator = "\n" if ends_with_newline else "\n\n"
 
-    with open(file_path, "a", encoding="utf-8") as file:
-        file.write(separator)
-        file.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
+    with open(file_path, "a", encoding="utf-8") as output_file:
+        output_file.write(separator)
+        output_file.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
 
         line_number = 1
         while True:
-            user_input = input("Enter content line: ")
-            if user_input.lower() == "stop":
+            content = input("Enter content line: ")
+            if content == "stop":
                 break
 
-            file.write(f"{line_number} {user_input}\n")
+            output_file.write(f"{line_number} {content}\n")
             line_number += 1
 
 
-if __name__ == "__main__":
+if __name__ in ("__main__", "<run_path>"):
     create_file_from_terminal()
