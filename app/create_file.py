@@ -3,63 +3,56 @@ import os
 from datetime import datetime
 
 
-def main() -> None:
-    args = sys.argv[1:]
-
-    # Parse arguments
+def create_file_from_terminal():
     directories = []
     filename = None
 
-    i = 0
-    while i < len(args):
-        if args[i] == "-d":
+    i = 1
+    while i < len(sys.argv):
+        if sys.argv[i] == "-d":
             i += 1
-            while i < len(args) and args[i][0] != "-":
-                directories.append(args[i])
+            while i < len(sys.argv) and not sys.argv[i].startswith("-"):
+                directories.append(sys.argv[i])
                 i += 1
-        elif args[i] == "-f":
-            filename = args[i + 1]
-            i += 2
+        elif sys.argv[i] == "-f":
+            i += 1
+            if i < len(sys.argv):
+                filename = sys.argv[i]
+                i += 1
         else:
             i += 1
 
-    # Create directory hierarchy if specified
     if directories:
         dir_path = os.path.join(*directories)
         os.makedirs(dir_path, exist_ok=True)
     else:
         dir_path = "."
 
-    # Create/append to file if filename is specified
-    if filename:
-        file_path = (os.path.join(dir_path, filename)
-                     if directories else filename)
+    if filename is None:
+        return
 
-        # Check if file exists
-        file_exists = os.path.exists(file_path)
+    file_path = os.path.join(dir_path, filename)
 
-        # Collect content lines
-        lines = []
+    separator = ""
+    if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
+        with open(file_path, "rb") as existing_file:
+            existing_file.seek(-1, os.SEEK_END)
+            ends_with_newline = existing_file.read(1) == b"\n"
+        separator = "\n" if ends_with_newline else "\n\n"
+
+    with open(file_path, "a", encoding="utf-8") as file:
+        file.write(separator)
+        file.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
+
         line_number = 1
-
         while True:
-            content = input("Enter content line: ")
-            if content == "stop":
+            user_input = input("Enter content line: ")
+            if user_input.lower() == "stop":
                 break
-            lines.append(f"{line_number} {content}")
+
+            file.write(f"{line_number} {user_input}\n")
             line_number += 1
-
-        # Write to file
-        if lines:
-            with open(file_path, "a") as f:
-                if file_exists:
-                    f.write("\n\n")  # Blank line separator for appending
-                else:
-                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    f.write(f"{timestamp}\n")
-
-                f.write("\n".join(lines))
 
 
 if __name__ == "__main__":
-    main()
+    create_file_from_terminal()
