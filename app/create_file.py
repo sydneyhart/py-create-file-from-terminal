@@ -2,7 +2,8 @@ import sys
 import os
 from datetime import datetime
 
-def main():
+
+def main() -> None:
     args = sys.argv[1:]
 
     # Parse arguments
@@ -54,7 +55,7 @@ def main():
                 if file_exists:
                     f.write("\n\n")  # Blank line separator for appending
                 else:
-                    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     f.write(f"{timestamp}\n")
 
                 f.write("\n".join(lines))
