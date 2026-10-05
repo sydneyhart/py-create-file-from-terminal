@@ -1,51 +1,61 @@
-import argparse
+import sys
 import os
 from datetime import datetime
-from pathlib import Path
 
-
-def create_file(file_path: Path) -> None:
-    separator = ""
-    if file_path.exists() and file_path.stat().st_size > 0:
-        with file_path.open("rb") as existing_file:
-            existing_file.seek(-1, os.SEEK_END)
-            ends_with_newline = existing_file.read(1) == b"\n"
-        separator = "\n" if ends_with_newline else "\n\n"
-
-    with file_path.open("a", encoding="utf-8") as output_file:
-        output_file.write(separator)
-        output_file.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
-
+def main():
+    args = sys.argv[1:]
+    
+    # Parse arguments
+    directories = []
+    filename = None
+    
+    i = 0
+    while i < len(args):
+        if args[i] == "-d":
+            i += 1
+            while i < len(args) and args[i][0] != "-":
+                directories.append(args[i])
+                i += 1
+        elif args[i] == "-f":
+            filename = args[i + 1]
+            i += 2
+        else:
+            i += 1
+    
+    # Create directory hierarchy if specified
+    if directories:
+        dir_path = os.path.join(*directories)
+        os.makedirs(dir_path, exist_ok=True)
+    else:
+        dir_path = "."
+    
+    # Create/append to file if filename is specified
+    if filename:
+        file_path = os.path.join(dir_path, filename) if directories else filename
+        
+        # Check if file exists
+        file_exists = os.path.exists(file_path)
+        
+        # Collect content lines
+        lines = []
         line_number = 1
+        
         while True:
             content = input("Enter content line: ")
             if content == "stop":
                 break
-            output_file.write(f"{line_number} {content}\n")
+            lines.append(f"{line_number} {content}")
             line_number += 1
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Create directories and append timestamped file content."
-    )
-    parser.add_argument(
-        "-d", nargs="+", metavar="DIRECTORY", help="Separate directory names"
-    )
-    parser.add_argument("-f", metavar="FILE", help="File name")
-    args = parser.parse_args()
-
-    if args.d is None and args.f is None:
-        parser.error("Provide -d, -f, or both.")
-
-    directory = Path(".")
-    if args.d is not None:
-        directory = Path(os.path.join(*args.d))
-        os.makedirs(directory, exist_ok=True)
-
-    if args.f is not None:
-        create_file(directory / args.f)
-
+        
+        # Write to file
+        if lines:
+            with open(file_path, "a") as f:
+                if file_exists:
+                    f.write("\n\n")  # Blank line separator for appending
+                else:
+                    f.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                
+                f.write("\n".join(lines))
 
 if __name__ == "__main__":
     main()
