@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 
 
-def create_file_from_terminal():
+def create_file_from_terminal() -> None:
     directories = []
     filename = None
 
